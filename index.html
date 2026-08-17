@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
 html,body{height:100%;}
-body{min-height:100vh;background:linear-gradient(135deg,#ffe0ec,#ffb6c9,#ff8fab);color:#5a2a3a;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px 60px;position:relative;}
+body{min-height:100vh;background:linear-gradient(135deg,#ffe0ec,#ffb6c9,#ff8fab);color:#5a2a3a;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px 90px;position:relative;}
 h1{margin:20px 0 5px;font-size:1.6em;text-shadow:0 2px 6px rgba(255,255,255,.6);color:#a3315a;}
 p.sub{opacity:.9;margin-bottom:20px;font-size:.95em;transition:opacity .4s, height .4s;}
 p.sub.hide{opacity:0;height:0;margin:0;overflow:hidden;}
@@ -57,7 +57,6 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 .detail-text.show{max-height:200px;opacity:1;padding:12px 20px;margin-bottom:6px;}
 .detail-wrap{width:100%;display:flex;flex-direction:column;align-items:center;}
 .tap-hint{font-size:.8em;opacity:.75;margin-top:14px;}
-.music-toggle{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.6);border:none;border-radius:50%;width:44px;height:44px;font-size:1.3em;cursor:pointer;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 .falling{position:fixed;top:-40px;font-size:1.8em;z-index:5;animation:fall linear forwards;cursor:grab;touch-action:none;}
 .falling.confetti{border-radius:2px;}
@@ -70,11 +69,13 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 .photo-reveal.show img{transform:scale(1);}
 .photo-reveal p{color:#fff;margin-top:16px;font-size:1.1em;text-align:center;padding:0 20px;}
 .photo-reveal .close-hint{margin-top:24px;font-size:.8em;opacity:.7;color:#fff;}
+
+.music-player{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:300;width:92%;max-width:320px;background:rgba(255,255,255,.85);border-radius:16px;padding:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.music-player audio{width:100%;}
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas>
-<button class="music-toggle" id="musicBtn" title="Musique">🔈</button>
 <div class="heart-emoji">💌</div>
 <h1 id="mainTitle">Invitation surprise...</h1>
 <p class="sub" id="mainSub">Glisse le mot arabe vers la bonne question habibi (100% tu es capable)</p>
@@ -117,7 +118,9 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
   <p class="close-hint">Touche pour fermer</p>
 </div>
 
-<audio id="bgMusic" src="musique.mp3" loop preload="auto"></audio>
+<div class="music-player" id="musicPlayer">
+  <audio controls id="bgMusic" src="musique.mp3" loop preload="auto"></audio>
+</div>
 
 <script>
 const EVENT_DATETIME = "2026-08-22T19:00:00";
@@ -285,19 +288,7 @@ nonBtn.addEventListener('mouseover', moveNon);
 nonBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); moveNon(); });
 nonBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); moveNon(); });
 
-function tryStartMusic(){
-  const music = document.getElementById('bgMusic');
-  const btn = document.getElementById('musicBtn');
-  music.volume = 0.6;
-  const p = music.play();
-  if(p !== undefined){
-    p.then(()=>{ btn.textContent = '🔊'; })
-     .catch(()=>{ btn.textContent = '🔈'; });
-  }
-}
-
 ouiBtn.addEventListener('click', ()=>{
-  tryStartMusic();
   launchFireworks();
   launchConfetti();
   setTimeout(()=>{
@@ -307,17 +298,6 @@ ouiBtn.addEventListener('click', ()=>{
     startPetalRain();
     startCountdown();
   }, 1200);
-});
-
-document.getElementById('musicBtn').addEventListener('click', ()=>{
-  const music = document.getElementById('bgMusic');
-  const btn = document.getElementById('musicBtn');
-  if(music.paused){
-    music.play().then(()=>{ btn.textContent = '🔊'; }).catch(()=>{});
-  } else {
-    music.pause();
-    btn.textContent = '🔈';
-  }
 });
 
 document.querySelectorAll('.detail-btn').forEach(btn=>{
