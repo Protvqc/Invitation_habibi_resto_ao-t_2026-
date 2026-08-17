@@ -29,17 +29,18 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 .qanswer.revealed{filter:blur(0);opacity:1;}
 
 .pool-label{margin-top:16px;font-size:.85em;opacity:.85;}
-.game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;position:relative;}
-.tile{background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.8);border-radius:12px;padding:10px 14px;font-size:1em;cursor:grab;min-width:80px;transition:box-shadow .2s,border-color .2s;user-select:none;color:#a3315a;font-weight:600;touch-action:none;position:relative;}
-.tile.dragging{opacity:.85;box-shadow:0 8px 18px rgba(0,0,0,.25);z-index:50;position:fixed;pointer-events:none;transform:scale(1.12);}
-.tile.matched{background:#66bb6a;color:#fff;border-color:#66bb6a;cursor:default;opacity:.5;}
+.game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;position:relative;min-height:60px;}
+.tile-slot{width:90px;height:44px;visibility:hidden;}
+.tile{background:rgba(255,255,255,.6);border:2px solid rgba(255,255,255,.9);border-radius:12px;padding:10px 14px;font-size:1em;min-width:80px;user-select:none;color:#a3315a;font-weight:600;touch-action:none;box-shadow:0 2px 4px rgba(0,0,0,.08);}
+.tile.dragging{opacity:.9;box-shadow:0 10px 20px rgba(0,0,0,.3);z-index:999;position:fixed !important;pointer-events:none;transform:scale(1.15);}
+.tile.matched{background:#66bb6a;color:#fff;border-color:#66bb6a;opacity:.5;visibility:hidden;}
 .tile.wrong{animation:shake .3s;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
 .progress{margin-top:10px;font-size:.9em;opacity:.85;}
 
 .q-box{margin-top:30px;font-size:1.2em;}
 .btn-row{position:relative;height:120px;width:100%;margin-top:20px;}
-.oui-btn,.non-btn{position:absolute;padding:16px 34px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:15px;animation:breathe 1.6s ease-in-out infinite;transition:left .18s ease,top .18s ease,width .25s,height .25s,padding .25s,font-size .25s;}
+.oui-btn,.non-btn{position:absolute;padding:16px 34px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:15px;animation:breathe 1.6s ease-in-out infinite;transition:left .18s ease,top .18s ease;}
 .oui-btn{left:calc(50% - 100px);background:#ff2d78;color:#fff;box-shadow:0 0 20px 6px rgba(255,45,120,.6);}
 .non-btn{left:calc(50% + 20px);background:#ff6b6b;color:#fff;box-shadow:0 0 20px 6px rgba(255,107,107,.5);}
 @keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
@@ -56,7 +57,6 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 .detail-text.show{max-height:200px;opacity:1;padding:12px 20px;margin-bottom:6px;}
 .detail-wrap{width:100%;display:flex;flex-direction:column;align-items:center;}
 .tap-hint{font-size:.8em;opacity:.75;margin-top:14px;}
-.music-toggle{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.6);border:none;border-radius:50%;width:44px;height:44px;font-size:1.3em;cursor:pointer;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 .falling{position:fixed;top:-40px;font-size:1.8em;z-index:5;animation:fall linear forwards;cursor:grab;touch-action:none;}
 .falling.confetti{border-radius:2px;}
@@ -66,7 +66,6 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 </head>
 <body>
 <canvas id="fx"></canvas>
-<button class="music-toggle" id="musicBtn" title="Musique">🔈</button>
 <div class="heart-emoji">💌</div>
 <h1 id="mainTitle">Invitation surprise...</h1>
 <p class="sub" id="mainSub">Glisse le mot arabe vers la bonne question habibi (100% tu es capable)</p>
@@ -104,13 +103,8 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
   <div class="tap-hint">👉 Touche l'écran ou glisse les cœurs/fleurs avec ton doigt 💕</div>
 </div>
 
-<iframe id="ytFrame" style="display:none;width:1px;height:1px;" src="" allow="autoplay"></iframe>
-
 <script>
-// ==== CONFIGURATION A MODIFIER ====
 const EVENT_DATETIME = "2026-08-22T19:00:00";
-const YOUTUBE_ID = "kPa7bsKwL-c";
-// ===================================
 
 const pairs = [
   {fr:"Qui",      ar:"Meen",  answer:"Toi et moi habibi"},
@@ -151,11 +145,14 @@ pairs.forEach((p)=>{
 
 const shuffledAr = [...pairs].sort(()=>Math.random()-0.5);
 shuffledAr.forEach((p)=>{
+  const slot = document.createElement('div');
+  slot.className = 'tile-slot';
   const t = document.createElement('div');
   t.className = 'tile';
   t.textContent = p.ar;
   t.dataset.ar = p.ar;
-  arRow.appendChild(t);
+  slot.appendChild(t);
+  arRow.appendChild(slot);
 });
 
 function checkMatch(tile, row){
@@ -182,43 +179,51 @@ function checkMatch(tile, row){
   }
 }
 
+function resetTileStyle(t){
+  t.classList.remove('dragging');
+  t.style.position='';
+  t.style.left='';
+  t.style.top='';
+  t.style.width='';
+  t.style.height='';
+}
+
 document.querySelectorAll('.tile').forEach(t=>{
-  let offsetX=0, offsetY=0, origParent=null, origNext=null, origW=0, origH=0;
-  t.addEventListener('pointerdown', (e)=>{
+  let offsetX=0, offsetY=0, active=false;
+  function startDrag(e){
     if(t.classList.contains('matched')) return;
-    t.setPointerCapture(e.pointerId);
+    active = true;
+    try{ t.setPointerCapture(e.pointerId); }catch(err){}
     const rect = t.getBoundingClientRect();
-    origW = rect.width; origH = rect.height;
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
-    origParent = t.parentNode; origNext = t.nextSibling;
-    t.style.width = origW+'px'; t.style.height = origH+'px';
-    document.body.appendChild(t);
+    t.style.width = rect.width+'px';
+    t.style.height = rect.height+'px';
     t.classList.add('dragging');
     t.style.left = (e.clientX-offsetX)+'px';
     t.style.top = (e.clientY-offsetY)+'px';
-  });
-  t.addEventListener('pointermove', (e)=>{
-    if(!t.classList.contains('dragging')) return;
+  }
+  function moveDrag(e){
+    if(!active) return;
     t.style.left = (e.clientX-offsetX)+'px';
     t.style.top = (e.clientY-offsetY)+'px';
     document.querySelectorAll('.qrow').forEach(r=>r.classList.remove('dragover'));
     const under = document.elementFromPoint(e.clientX, e.clientY);
     const row = under ? under.closest('.qrow') : null;
     if(row && !row.classList.contains('done')) row.classList.add('dragover');
-  });
-  t.addEventListener('pointerup', (e)=>{
-    if(!t.classList.contains('dragging')) return;
-    t.classList.remove('dragging');
-    t.style.position=''; t.style.left=''; t.style.top=''; t.style.width=''; t.style.height='';
+  }
+  function endDrag(e){
+    if(!active) return;
+    active = false;
     const under = document.elementFromPoint(e.clientX, e.clientY);
     const row = under ? under.closest('.qrow') : null;
+    resetTileStyle(t);
     if(row) checkMatch(t, row);
-    if(origParent){
-      if(origNext) origParent.insertBefore(t, origNext);
-      else origParent.appendChild(t);
-    }
-  });
+  }
+  t.addEventListener('pointerdown', startDrag);
+  t.addEventListener('pointermove', moveDrag);
+  t.addEventListener('pointerup', endDrag);
+  t.addEventListener('pointercancel', endDrag);
 });
 
 function goToStage2(){
@@ -242,7 +247,7 @@ function rectsOverlap(r1,r2){
 }
 function moveNon(){
   nonAttempts++;
-  const shrink = Math.max(0.45, 1 - nonAttempts*0.07);
+  const shrink = Math.max(0.5, 1 - nonAttempts*0.06);
   nonBtn.style.transform = `scale(${shrink})`;
   const btnRow = document.querySelector('#stage2 .btn-row');
   const rowRect = btnRow.getBoundingClientRect();
@@ -267,7 +272,6 @@ nonBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); moveNon(); });
 ouiBtn.addEventListener('click', ()=>{
   launchFireworks();
   launchConfetti();
-  startMusic();
   setTimeout(()=>{
     document.getElementById('stage2').classList.remove('active','enter');
     const s3 = document.getElementById('stage3');
@@ -307,20 +311,6 @@ function startCountdown(){
   }
   tick();
 }
-
-let musicStarted = false;
-function startMusic(){
-  if(musicStarted) return;
-  musicStarted = true;
-  const frame = document.getElementById('ytFrame');
-  frame.src = `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&loop=1&playlist=${YOUTUBE_ID}&controls=0`;
-  document.getElementById('musicBtn').textContent = '🔊';
-}
-document.getElementById('musicBtn').addEventListener('click', ()=>{
-  const btn = document.getElementById('musicBtn');
-  if(!musicStarted){ startMusic(); return; }
-  btn.textContent = btn.textContent === '🔊' ? '🔈' : '🔊';
-});
 
 const canvas = document.getElementById('fx');
 const ctx = canvas.getContext('2d');
