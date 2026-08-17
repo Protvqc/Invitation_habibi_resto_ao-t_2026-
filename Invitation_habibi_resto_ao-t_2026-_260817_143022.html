@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invitation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
+html,body{height:100%;}
+body{min-height:100vh;background:linear-gradient(135deg,#2b0f3f,#6a0f6f,#c2185b);color:#fff;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px 60px;position:relative;}
+h1{margin:20px 0 5px;font-size:1.6em;text-shadow:0 2px 6px #000;}
+p.sub{opacity:.85;margin-bottom:20px;font-size:.95em;}
+.heart-emoji{font-size:3em;animation:beat 1.2s infinite;}
+@keyframes beat{0%,100%{transform:scale(1);}50%{transform:scale(1.25);}}
+.stage{display:none;width:100%;max-width:480px;position:relative;z-index:2;}
+.stage.active{display:flex;flex-direction:column;align-items:center;}
+
+.qrow{display:flex;align-items:center;justify-content:space-between;width:100%;background:rgba(255,255,255,.1);une petitelid rgba(255,255,255,.25);border-radius:14px;padding:10px 14px;margin:6px 0;cursor:pointer;transition:.2s;}
+.qrow.active-row{border-color:#ffd54f;background:rgba(255,213,79,.15);}
+.qrow.done{border-color:#66bb6a;background:rgba(102,187,106,.12);cursor:default;}
+.qword{font-weight:bold;font-size:1em;min-width:80px;text-align:left;}
+.qanswer{flex:1;text-align:right;font-style:italic;}
+.qanswer.blur-answer{filter:blur(6px);opacity:.85;transition:.3s;}
+.qanswer.revealed{filter:blur(0);opacity:1;}
+
+.pool-label{margin-top:16px;font-size:.85em;opacity:.8;}
+.game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;}
+.tile{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);border-radius:12px;padding:10px 14px;font-size:1em;cursor:pointer;min-width:80px;transition:.2s;user-select:none;}
+.tile.selected{background:#ffd54f;color:#3a1a4a;border-color:#ffd54f;}
+.tile.matched{background:#66bb6a;color:#fff;border-color:#66bb6a;cursor:default;opacity:.5;}
+.tile.wrong{animation:shake .3s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.progress{margin-top:10px;font-size:.9em;opacity:.8;}
+
+.q-box{margin-top:30px;font-size:1.2em;}
+.btn-row{position:relative;height:100px;width:100%;margin-top:20px;}
+.oui-btn,.non-btn{position:absolute;padding:14px 30px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:10px;}
+.oui-btn{left:calc(50% - 90px);background:#66bb6a;color:#fff;}
+.non-btn{left:calc(50% + 10px);background:#ef5350;color:#fff;transition:left .15s,top .15s;}
+.hint{font-size:.75em;opacity:.6;margin-top:8px;}
+
+.final{display:none;}
+.final.active{display:flex;}
+.final h2{font-size:1.8em;margin-bottom:10px;}
+.detail{background:rgba(255,255,255,.12);border-radius:14px;padding:16px 20px;margin:8px 0;width:100%;max-width:400px;text-align:left;font-size:1em;}
+.tap-hint{font-size:.8em;opacity:.7;margin-top:14px;}
+canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
+.falling{position:fixed;top:-40px;font-size:1.6em;pointer-events:none;z-index:1;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.9;}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="heart-emoji">💌</div>
+<h1>Invitation surprise...</h1>
+<p class="sub">Appuie sur une question, puis trouve le bon mot en arabe comme que je t'ai appris habibi (100% tu es capable)</p>
+
+<div class="stage active" id="stage1">
+<div id="qList"></div>
+<div class="pool-label">Choisis le bon mot :</div>
+<div class="game-row" id="arRow"></div>
+<div class="progress" id="progress">0 / 6 trouvés</div>
+</div>
+
+<div class="stage" id="stage2">
+<div class="q-box">Est-ce que tu veux aller au resto avec moi? Dernière date avant mom retour à Nicolet </div>
+<div class="btn-row">
+<button class="oui-btn" id="ouiBtn">Oui</button>
+<button class="non-btn" id="nonBtn">Non</button>
+</div>
+<div class="hint">(ps : ... essaie donc de cliquer sur "Non" 😈)</div>
+</div>
+
+<div class="final" id="stage3">
+<div class="heart-emoji">🎉</div>
+<h2>À bientôt Habibi ❤️</h2>
+<div class="detail">👗 <b>Tenue:</b> Habille-toi avec ta belle robe noire, talon haut noir et ????</div>
+<div class="detail">🕖 <b>Heure:</b> Je viens te chercher à 19h00</div>
+<div class="detail">📍 <b>Endroit:</b> Surprise ! Meme si je sais que tu n'aime pas ça, fais-moi confiance  ;) </div>
+<div class="detail">💬 <b>Message:</b> J'ai hâte de passer cette soirée avec toi /div>
+<div class="tap-hint">👉 Touche l'écran n'importe où pour une dernière surprise 💕</div>
+</div>
+
+<script>
+const pairs = [
+{fr:"Qui", ar:"Meen", answer:"Toi et moi habibi"},
+{fr:"Quoi", ar:"Shu", answer:"Un souper date au resto"},
+{fr:"Quand", ar:"Eimta", answer:"Samedi soir, 19h00"},
+{fr:"Comment", ar:"Kif", answer:"Habillée  comme je te le demande"},
+{fr:"Ou", ar:"Wein", answer:"Surprise! Fais-moi confiance"},
+{fr:"Pourquoi", ar:"Leish", answer:"Parce que je t'aime, tout simplement"}
+];
+
+const qList = document.getElementById('qList');
+const arRow = document.getElementById('arRow');
+const progressEl = document.getElementById('progress');
+let matchedCount = 0;
+let activeRow = null;
+
+pairs.forEach((p)=>{
+const row = document.createElement('div');
+row.className = 'qrow';
+row.dataset.fr = p.fr;
+row.innerHTML = <span class="qword"&gt;${p.fr} ?</span><span>=</span><span class="qanswer blur-answer">${p.answer}&lt;/span>;
+row.onclick = ()=>selectRow(row);
+qList.appendChild(row);
+});
+
+const shuffledAr = [...pairs].sort(()=>Math.random()-0.5);
+shuffledAr.forEach((p)=>{
+const t = document.createElement('div');
+t.className = 'tile';
+t.textContent = p.ar;
+t.dataset.ar = p.ar;
+t.onclick = ()=>selectAr(t);
+arRow.appendChild(t);
+});
+
+function selectRow(row){
+if(row.classList.contains('done')) return;
+document.querySelectorAll('.qrow').forEach(r=>r.classList.remove('active-row'));
+row.classList.add('active-row');
+activeRow = row;
+}
+function selectAr(t){
+if(t.classList.contains('matched')) return;
+if(!activeRow){
+t.classList.add('wrong');
+setTimeout(()=>t.classList.remove('wrong'),400);
+return;
+}
+const pair = pairs.find(p=>p.fr===activeRow.dataset.fr);
+if(pair.ar === t.dataset.ar){
+t.classList.add('matched');
+activeRow.classList.remove('active-row');
+activeRow.classList.add('done');
+activeRow.querySelector('.qanswer').classList.add('revealed');
+activeRow.querySelector('.qanswer').classList.remove('blur-answer');
+matchedCount++;
+progressEl.textContent = matchedCount + " / 6 trouvés";
+activeRow = null;
+if(matchedCount === pairs.length){
+setTimeout(()=>{
+document.getElementById('stage1').classList.remove('active');
+document.getElementById('stage2').classList.add('active');
+}, 700);
+}
+} else {
+t.classList.add('wrong');
+activeRow.style.animation='shake .3s';
+setTimeout(()=>{ t.classList.remove('wrong'); activeRow.style.animation=''; },400);
+}
+}
+
+const nonBtn = document.getElementById('nonBtn');
+const btnRow = document.querySelector('.btn-row');
+function moveNon(){
+const maxX = btnRow.clientWidth - nonBtn.offsetWidth - 10;
+const maxY = btnRow.clientHeight - nonBtn.offsetHeight - 10;
+const x = Math.max(0, Math.random()*maxX);
+const y = Math.max(0, Math.random()*maxY);
+nonBtn.style.left = x + 'px';
+nonBtn.style.top = y + 'px';
+}
+nonBtn.addEventListener('mouseover', moveNon);
+nonBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); moveNon(); });
+
+document.getElementById('ouiBtn').addEventListener('click', ()=>{
+launchFireworks();
+setTimeout(()=>{
+document.getElementById('stage2').classList.remove('active');
+document.getElementById('stage3').classList.add('active');
+startPetalRain();
+}, 1200);
+});
+
+const canvas = document.getElementById('fx');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize); resize();
+let particles = [];
+function launchFireworks(){
+for(let b=0; b<6; b++){
+setTimeout(()=>{
+const cx = Math.random()canvas.width;
+const cy = Math.random()canvas.height0.5 + 50;
+const color = ['#ff6b6b','#ffd54f','#66bb6a','#42a5f5','#ec407a'][Math.floor(Math.random()*5)];
+for(let i=0;i<40;i++){
+const angle = (Math.PI2*i)/40;
+const speed = Math.random()*4+2;
+particles.push({x:cx,y:cy,vx:Math.cos(angle)speed,vy:Math.sin(angle)speed,life:60,color});
+}
+}, b250);
+}
+}
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles.forEach(p=>{
+p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life--;
+ctx.globalAlpha = Math.max(p.life/60,0);
+ctx.fillStyle = p.color;
+ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI2); ctx.fill();
+});
+ctx.globalAlpha = 1;
+particles = particles.filter(p=>p.life>0);
+requestAnimationFrame(animate);
+}
+animate();
+
+const symbols = ['💕','🌸','❤️','🌹','💖'];
+function spawnPetal(xPos){
+const el = document.createElement('div');
+el.className = 'falling';
+el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+const x = xPos !== undefined ? xPos : Math.random()*window.innerWidth;
+el.style.left = x + 'px';
+const duration = 3 + Math.random()3;
+el.style.animationDuration = duration + 's';
+document.body.appendChild(el);
+setTimeout(()=> el.remove(), duration1000 + 200);
+}
+function startPetalRain(){
+setInterval(()=> spawnPetal(), 350);
+}
+document.getElementById('stage3').addEventListener('click', (e)=>{
+for(let i=0;i<8;i++){
+setTimeout(()=> spawnPetal(e.clientX + (Math.random()60-30)), i40);
+}
+});
+document.getElementById('stage3').addEventListener('touchstart', (e)=>{
+const x = e.touches[0].clientX;
+for(let i=0;i<8;i++){
+setTimeout(()=> spawnPetal(x + (Math.random()60-30)), i40);
+}
+});
+</script>
+</body>
+</html>
