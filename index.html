@@ -9,15 +9,20 @@
 html,body{height:100%;}
 body{min-height:100vh;background:linear-gradient(135deg,#ffe0ec,#ffb6c9,#ff8fab);color:#5a2a3a;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 10px 60px;position:relative;}
 h1{margin:20px 0 5px;font-size:1.6em;text-shadow:0 2px 6px rgba(255,255,255,.6);color:#a3315a;}
-p.sub{opacity:.9;margin-bottom:20px;font-size:.95em;}
+p.sub{opacity:.9;margin-bottom:20px;font-size:.95em;transition:opacity .4s, height .4s;}
+p.sub.hide{opacity:0;height:0;margin:0;overflow:hidden;}
+h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, height .4s;}
 .heart-emoji{font-size:3em;animation:beat 1.2s infinite;}
 @keyframes beat{0%,100%{transform:scale(1);}50%{transform:scale(1.25);}}
+
 .stage{display:none;width:100%;max-width:480px;position:relative;z-index:2;}
 .stage.active{display:flex;flex-direction:column;align-items:center;}
+.stage.enter{animation:popIn .5s ease;}
+@keyframes popIn{0%{opacity:0;transform:scale(.85) translateY(20px);}100%{opacity:1;transform:scale(1) translateY(0);}}
 
-.qrow{display:flex;align-items:center;justify-content:space-between;width:100%;background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.7);border-radius:14px;padding:10px 14px;margin:6px 0;cursor:pointer;transition:.2s;}
-.qrow.active-row{border-color:#ff5c8a;background:rgba(255,92,138,.2);}
-.qrow.done{border-color:#66bb6a;background:rgba(102,187,106,.2);cursor:default;}
+.qrow{display:flex;align-items:center;justify-content:space-between;width:100%;background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.7);border-radius:14px;padding:10px 14px;margin:6px 0;transition:.2s;}
+.qrow.dragover{border-color:#ff5c8a;background:rgba(255,92,138,.25);transform:scale(1.03);}
+.qrow.done{border-color:#66bb6a;background:rgba(102,187,106,.2);}
 .qword{font-weight:bold;font-size:1em;min-width:80px;text-align:left;color:#a3315a;}
 .qanswer{flex:1;text-align:right;font-style:italic;color:#5a2a3a;}
 .qanswer.blur-answer{filter:blur(6px);opacity:.85;transition:.3s;}
@@ -25,24 +30,30 @@ p.sub{opacity:.9;margin-bottom:20px;font-size:.95em;}
 
 .pool-label{margin-top:16px;font-size:.85em;opacity:.85;}
 .game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;}
-.tile{background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.8);border-radius:12px;padding:10px 14px;font-size:1em;cursor:pointer;min-width:80px;transition:.2s;user-select:none;color:#a3315a;font-weight:600;}
-.tile.selected{background:#ff5c8a;color:#fff;border-color:#ff5c8a;}
+.tile{background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.8);border-radius:12px;padding:10px 14px;font-size:1em;cursor:grab;min-width:80px;transition:.2s;user-select:none;color:#a3315a;font-weight:600;touch-action:none;}
+.tile.dragging{opacity:.4;transform:scale(1.1);cursor:grabbing;}
 .tile.matched{background:#66bb6a;color:#fff;border-color:#66bb6a;cursor:default;opacity:.5;}
 .tile.wrong{animation:shake .3s;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
 .progress{margin-top:10px;font-size:.9em;opacity:.85;}
 
 .q-box{margin-top:30px;font-size:1.2em;}
-.btn-row{position:relative;height:100px;width:100%;margin-top:20px;}
-.oui-btn,.non-btn{position:absolute;padding:14px 30px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:10px;}
-.oui-btn{left:calc(50% - 90px);background:#66bb6a;color:#fff;}
-.non-btn{left:calc(50% + 10px);background:#ef5350;color:#fff;transition:left .15s,top .15s;}
+.btn-row{position:relative;height:120px;width:100%;margin-top:20px;}
+.oui-btn,.non-btn{position:absolute;padding:16px 34px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:15px;animation:breathe 1.6s ease-in-out infinite;}
+.oui-btn{left:calc(50% - 100px);background:#ff2d78;color:#fff;box-shadow:0 0 20px 6px rgba(255,45,120,.6);}
+.non-btn{left:calc(50% + 20px);background:#ff6b6b;color:#fff;box-shadow:0 0 20px 6px rgba(255,107,107,.5);transition:left .18s ease,top .18s ease;}
+@keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 .hint{font-size:.75em;opacity:.7;margin-top:8px;}
 
 .final{display:none;}
-.final.active{display:flex;}
+.final.active{display:flex;flex-direction:column;align-items:center;}
 .final h2{font-size:1.8em;margin-bottom:10px;color:#a3315a;}
-.detail{background:rgba(255,255,255,.55);border-radius:14px;padding:16px 20px;margin:8px 0;width:100%;max-width:400px;text-align:left;font-size:1em;}
+.detail-btn{background:rgba(255,255,255,.55);border:2px solid #ff5c8a;border-radius:50px;padding:14px 22px;margin:8px 0;width:100%;max-width:400px;text-align:center;font-size:1.3em;cursor:pointer;animation:blink 1.4s ease-in-out infinite;transition:.2s;}
+.detail-btn.opened{animation:none;background:#ffd1dc;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.55;}}
+.detail-text{max-height:0;overflow:hidden;transition:max-height .35s ease, opacity .3s ease;opacity:0;width:100%;max-width:400px;text-align:left;font-size:1em;background:rgba(255,255,255,.4);border-radius:0 0 14px 14px;}
+.detail-text.show{max-height:200px;opacity:1;padding:12px 20px;margin-bottom:6px;}
+.detail-wrap{width:100%;display:flex;flex-direction:column;align-items:center;}
 .tap-hint{font-size:.8em;opacity:.75;margin-top:14px;}
 canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 .falling{position:fixed;top:-40px;font-size:1.6em;pointer-events:none;z-index:1;animation:fall linear forwards;}
@@ -52,12 +63,12 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 <body>
 <canvas id="fx"></canvas>
 <div class="heart-emoji">💌</div>
-<h1>Invitation surprise...</h1>
-<p class="sub">Appuie sur une question, puis trouve le bon mot en arabe comme que je t'ai appris habibi (100% tu es capable)</p>
+<h1 id="mainTitle">Invitation surprise...</h1>
+<p class="sub" id="mainSub">Glisse le mot arabe vers la bonne question habibi (100% tu es capable)</p>
 
-<div class="stage active" id="stage1">
+<div class="stage active enter" id="stage1">
   <div id="qList"></div>
-  <div class="pool-label">Choisis le bon mot :</div>
+  <div class="pool-label">Fais glisser le bon mot ici :</div>
   <div class="game-row" id="arRow"></div>
   <div class="progress" id="progress">0 / 6 trouvés</div>
 </div>
@@ -74,10 +85,16 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 <div class="final" id="stage3">
   <div class="heart-emoji">🎉</div>
   <h2>À bientôt Habibi ❤️</h2>
-  <div class="detail">👗 <b>Tenue:</b> Habille-toi avec ta belle robe noire, talon haut noir et ????</div>
-  <div class="detail">🕖 <b>Heure:</b> Je viens te chercher à 19h00</div>
-  <div class="detail">📍 <b>Endroit:</b> Surprise ! Même si je sais que tu n'aimes pas ça, fais-moi confiance ;)</div>
-  <div class="detail">💬 <b>Message:</b> J'ai hâte de passer cette soirée avec toi</div>
+  <div class="detail-wrap">
+    <div class="detail-btn" data-key="tenue">👗</div>
+    <div class="detail-text" data-for="tenue">Habille-toi avec ta belle robe noire, talon haut noir et ????</div>
+    <div class="detail-btn" data-key="heure">🕖</div>
+    <div class="detail-text" data-for="heure">Je viens te chercher à 19h00</div>
+    <div class="detail-btn" data-key="lieu">📍</div>
+    <div class="detail-text" data-for="lieu">Surprise ! Même si je sais que tu n'aimes pas ça, fais-moi confiance ;)</div>
+    <div class="detail-btn" data-key="msg">💬</div>
+    <div class="detail-text" data-for="msg">J'ai hâte de passer cette soirée avec toi</div>
+  </div>
   <div class="tap-hint">👉 Touche l'écran n'importe où pour une dernière surprise 💕</div>
 </div>
 
@@ -95,14 +112,13 @@ const qList = document.getElementById('qList');
 const arRow = document.getElementById('arRow');
 const progressEl = document.getElementById('progress');
 let matchedCount = 0;
-let activeRow = null;
+let draggedTile = null;
 
 pairs.forEach((p)=>{
   const row = document.createElement('div');
   row.className = 'qrow';
   row.dataset.fr = p.fr;
   row.innerHTML = `<span class="qword">${p.fr} ?</span><span>=</span><span class="qanswer blur-answer">${p.answer}</span>`;
-  row.onclick = ()=>selectRow(row);
   qList.appendChild(row);
 });
 
@@ -112,66 +128,115 @@ shuffledAr.forEach((p)=>{
   t.className = 'tile';
   t.textContent = p.ar;
   t.dataset.ar = p.ar;
-  t.onclick = ()=>selectAr(t);
+  t.draggable = true;
   arRow.appendChild(t);
 });
 
-function selectRow(row){
-  if(row.classList.contains('done')) return;
-  document.querySelectorAll('.qrow').forEach(r=>r.classList.remove('active-row'));
-  row.classList.add('active-row');
-  activeRow = row;
-}
-function selectAr(t){
-  if(t.classList.contains('matched')) return;
-  if(!activeRow){
-    t.classList.add('wrong');
-    setTimeout(()=>t.classList.remove('wrong'),400);
-    return;
-  }
-  const pair = pairs.find(p=>p.fr===activeRow.dataset.fr);
-  if(pair.ar === t.dataset.ar){
-    t.classList.add('matched');
-    activeRow.classList.remove('active-row');
-    activeRow.classList.add('done');
-    activeRow.querySelector('.qanswer').classList.add('revealed');
-    activeRow.querySelector('.qanswer').classList.remove('blur-answer');
+function checkMatch(tile, row){
+  if(!tile || tile.classList.contains('matched') || row.classList.contains('done')) return;
+  const pair = pairs.find(p=>p.fr===row.dataset.fr);
+  if(pair.ar === tile.dataset.ar){
+    tile.classList.add('matched');
+    tile.draggable = false;
+    row.classList.remove('dragover');
+    row.classList.add('done');
+    row.querySelector('.qanswer').classList.add('revealed');
+    row.querySelector('.qanswer').classList.remove('blur-answer');
     matchedCount++;
     progressEl.textContent = matchedCount + " / 6 trouvés";
-    activeRow = null;
     if(matchedCount === pairs.length){
-      setTimeout(()=>{
-        document.getElementById('stage1').classList.remove('active');
-        document.getElementById('stage2').classList.add('active');
-      }, 700);
+      setTimeout(goToStage2, 700);
     }
   } else {
-    t.classList.add('wrong');
-    activeRow.style.animation='shake .3s';
-    setTimeout(()=>{ t.classList.remove('wrong'); activeRow.style.animation=''; },400);
+    row.classList.add('dragover');
+    row.style.animation='shake .3s';
+    setTimeout(()=>{ row.classList.remove('dragover'); row.style.animation=''; },400);
   }
 }
 
+document.querySelectorAll('.tile').forEach(t=>{
+  t.addEventListener('dragstart', ()=>{ draggedTile = t; t.classList.add('dragging'); });
+  t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); draggedTile=null; });
+  t.addEventListener('touchstart', (e)=>{ draggedTile = t; t.classList.add('dragging'); }, {passive:true});
+  t.addEventListener('touchend', (e)=>{
+    t.classList.remove('dragging');
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const row = el ? el.closest('.qrow') : null;
+    if(row) checkMatch(draggedTile, row);
+    draggedTile = null;
+  });
+});
+document.querySelectorAll('.qrow').forEach(row=>{
+  row.addEventListener('dragover', (e)=>{ e.preventDefault(); row.classList.add('dragover'); });
+  row.addEventListener('dragleave', ()=> row.classList.remove('dragover'));
+  row.addEventListener('drop', (e)=>{ e.preventDefault(); row.classList.remove('dragover'); checkMatch(draggedTile, row); });
+});
+
+function goToStage2(){
+  document.getElementById('mainTitle').classList.add('hide');
+  document.getElementById('mainSub').classList.add('hide');
+  const s1 = document.getElementById('stage1');
+  s1.classList.remove('active','enter');
+  const s2 = document.getElementById('stage2');
+  s2.classList.add('active','enter');
+  positionNonInitial();
+}
+
+function positionNonInitial(){
+  const nonBtn = document.getElementById('nonBtn');
+  nonBtn.style.left = 'calc(50% + 20px)';
+  nonBtn.style.top = '15px';
+}
+
 const nonBtn = document.getElementById('nonBtn');
-const btnRow = document.querySelector('.btn-row');
+const ouiBtn = document.getElementById('ouiBtn');
+function rectsOverlap(r1,r2){
+  return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+}
 function moveNon(){
-  const maxX = btnRow.clientWidth - nonBtn.offsetWidth - 10;
-  const maxY = btnRow.clientHeight - nonBtn.offsetHeight - 10;
-  const x = Math.max(0, Math.random()*maxX);
-  const y = Math.max(0, Math.random()*maxY);
+  const btnRow = document.querySelector('#stage2 .btn-row');
+  const rowRect = btnRow.getBoundingClientRect();
+  const maxX = rowRect.width - nonBtn.offsetWidth;
+  const maxY = rowRect.height - nonBtn.offsetHeight;
+  let x, y, tries=0, newRect;
+  const ouiRect = ouiBtn.getBoundingClientRect();
+  const ouiRel = {left: ouiRect.left-rowRect.left, right: ouiRect.right-rowRect.left, top: ouiRect.top-rowRect.top, bottom: ouiRect.bottom-rowRect.top};
+  do{
+    x = Math.max(0, Math.random()*maxX);
+    y = Math.max(0, Math.random()*maxY);
+    newRect = {left:x, right:x+nonBtn.offsetWidth, top:y, bottom:y+nonBtn.offsetHeight};
+    tries++;
+  } while(rectsOverlap(newRect, ouiRel) && tries < 20);
   nonBtn.style.left = x + 'px';
   nonBtn.style.top = y + 'px';
 }
 nonBtn.addEventListener('mouseover', moveNon);
 nonBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); moveNon(); });
+nonBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); moveNon(); });
 
-document.getElementById('ouiBtn').addEventListener('click', ()=>{
+ouiBtn.addEventListener('click', ()=>{
   launchFireworks();
   setTimeout(()=>{
-    document.getElementById('stage2').classList.remove('active');
-    document.getElementById('stage3').classList.add('active');
+    document.getElementById('stage2').classList.remove('active','enter');
+    const s3 = document.getElementById('stage3');
+    s3.classList.add('active','enter');
     startPetalRain();
   }, 1200);
+});
+
+document.querySelectorAll('.detail-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const key = btn.dataset.key;
+    const targetText = document.querySelector(`.detail-text[data-for="${key}"]`);
+    const isOpen = targetText.classList.contains('show');
+    document.querySelectorAll('.detail-text').forEach(dt=>dt.classList.remove('show'));
+    document.querySelectorAll('.detail-btn').forEach(b=>b.classList.remove('opened'));
+    if(!isOpen){
+      targetText.classList.add('show');
+      btn.classList.add('opened');
+    }
+  });
 });
 
 const canvas = document.getElementById('fx');
@@ -223,11 +288,13 @@ function startPetalRain(){
   setInterval(()=> spawnPetal(), 350);
 }
 document.getElementById('stage3').addEventListener('click', (e)=>{
+  if(e.target.closest('.detail-btn')) return;
   for(let i=0;i<8;i++){
     setTimeout(()=> spawnPetal(e.clientX + (Math.random()*60-30)), i*40);
   }
 });
 document.getElementById('stage3').addEventListener('touchstart', (e)=>{
+  if(e.target.closest('.detail-btn')) return;
   const x = e.touches[0].clientX;
   for(let i=0;i<8;i++){
     setTimeout(()=> spawnPetal(x + (Math.random()*60-30)), i*40);
