@@ -74,8 +74,8 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 </head>
 <body>
 <canvas id="fx"></canvas>
-<button class="music-toggle" id="musicBtn" title="Musique">\U0001F508</button>
-<div class="heart-emoji">\U0001F48C</div>
+<button class="music-toggle" id="musicBtn" title="Musique">🔈</button>
+<div class="heart-emoji">💌</div>
 <h1 id="mainTitle">Invitation surprise...</h1>
 <p class="sub" id="mainSub">Glisse le mot arabe vers la bonne question habibi (100% tu es capable)</p>
 
@@ -83,37 +83,37 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
   <div id="qList"></div>
   <div class="pool-label">Fais glisser le bon mot ici :</div>
   <div class="game-row" id="arRow"></div>
-  <div class="progress" id="progress">0 / 6 trouvÃ©s</div>
+  <div class="progress" id="progress">0 / 6 trouvés</div>
 </div>
 
 <div class="stage" id="stage2">
-  <div class="q-box">Est-ce que tu veux aller au resto avec moi? DerniÃ¨re date avant mon retour Ã  Nicolet</div>
+  <div class="q-box">Est-ce que tu veux aller au resto avec moi? Dernière date avant mon retour à Nicolet</div>
   <div class="btn-row">
     <button class="oui-btn" id="ouiBtn">Oui</button>
     <button class="non-btn" id="nonBtn">Non</button>
   </div>
-  <div class="hint">(ps : ... essaie donc de cliquer sur "Non" \U0001F608)</div>
+  <div class="hint">(ps : ... essaie donc de cliquer sur "Non" 😈)</div>
 </div>
 
 <div class="final" id="stage3">
-  <h2>Ã€ bientÃ´t Habibi \u2764\uFE0F</h2>
-  <div class="countdown" id="countdown">Chargement du compte Ã  rebours...</div>
+  <h2>À bientôt Habibi ❤️</h2>
+  <div class="countdown" id="countdown">Chargement du compte à rebours...</div>
   <div class="detail-wrap">
-    <div class="detail-btn" data-key="tenue">\U0001F457</div>
+    <div class="detail-btn" data-key="tenue">👗</div>
     <div class="detail-text" data-for="tenue">Habille-toi avec ta belle robe noire, talon haut noir et ????</div>
-    <div class="detail-btn" data-key="heure">\U0001F557</div>
-    <div class="detail-text" data-for="heure">Je viens te chercher Ã  19h00</div>
-    <div class="detail-btn" data-key="lieu">\U0001F4CD</div>
-    <div class="detail-text" data-for="lieu">Surprise ! MÃªme si je sais que tu n'aimes pas Ã§a, fais-moi confiance ;)</div>
-    <div class="detail-btn" data-key="msg">\U0001F4AC</div>
-    <div class="detail-text" data-for="msg">J'ai hÃ¢te de passer cette soirÃ©e avec toi</div>
+    <div class="detail-btn" data-key="heure">🕖</div>
+    <div class="detail-text" data-for="heure">Je viens te chercher à 19h00</div>
+    <div class="detail-btn" data-key="lieu">📍</div>
+    <div class="detail-text" data-for="lieu">Surprise ! Même si je sais que tu n'aimes pas ça, fais-moi confiance ;)</div>
+    <div class="detail-btn" data-key="msg">💬</div>
+    <div class="detail-text" data-for="msg">J'ai hâte de passer cette soirée avec toi</div>
   </div>
-  <div class="tap-hint">\U0001F449 Touche l'Ã©cran ou glisse les cÅ“urs/fleurs avec ton doigt \U0001F495</div>
+  <div class="tap-hint">👉 Touche l'écran ou glisse les cœurs/fleurs avec ton doigt 💕</div>
 </div>
 
 <div class="photo-reveal" id="photoReveal">
   <img src="photo.jpg" alt="Nous deux">
-  <p>Chaque moment avec toi est prÃ©cieux \u2764\uFE0F</p>
+  <p>Chaque moment avec toi est précieux ❤️</p>
   <p class="close-hint">Touche pour fermer</p>
 </div>
 
@@ -126,7 +126,7 @@ const pairs = [
   {fr:"Qui",      ar:"Meen",  answer:"Toi et moi habibi"},
   {fr:"Quoi",     ar:"Shu",   answer:"Un souper date au resto"},
   {fr:"Quand",    ar:"Eimta", answer:"Samedi soir, 19h00"},
-  {fr:"Comment",  ar:"Kif",   answer:"HabillÃ©e comme je te le demande"},
+  {fr:"Comment",  ar:"Kif",   answer:"Habillée comme je te le demande"},
   {fr:"Ou",       ar:"Wein",  answer:"Surprise! Fais-moi confiance"},
   {fr:"Pourquoi", ar:"Leish", answer:"Parce que je t'aime, tout simplement"}
 ];
@@ -181,7 +181,7 @@ function checkMatch(tile, row){
     row.querySelector('.qanswer').classList.add('revealed');
     row.querySelector('.qanswer').classList.remove('blur-answer');
     matchedCount++;
-    progressEl.textContent = matchedCount + " / 6 trouvÃ©s";
+    progressEl.textContent = matchedCount + " / 6 trouvés";
     playPop();
     if(matchedCount === pairs.length){
       setTimeout(goToStage2, 700);
@@ -291,8 +291,8 @@ function tryStartMusic(){
   music.volume = 0.6;
   const p = music.play();
   if(p !== undefined){
-    p.then(()=>{ btn.textContent = '\U0001F50A'; })
-     .catch(()=>{ btn.textContent = '\U0001F508'; });
+    p.then(()=>{ btn.textContent = '🔊'; })
+     .catch(()=>{ btn.textContent = '🔈'; });
   }
 }
 
@@ -313,10 +313,10 @@ document.getElementById('musicBtn').addEventListener('click', ()=>{
   const music = document.getElementById('bgMusic');
   const btn = document.getElementById('musicBtn');
   if(music.paused){
-    music.play().then(()=>{ btn.textContent = '\U0001F50A'; }).catch(()=>{});
+    music.play().then(()=>{ btn.textContent = '🔊'; }).catch(()=>{});
   } else {
     music.pause();
-    btn.textContent = '\U0001F508';
+    btn.textContent = '🔈';
   }
 });
 
@@ -340,12 +340,12 @@ function startCountdown(){
   function tick(){
     const now = Date.now();
     let diff = target - now;
-    if(diff <= 0){ el.textContent = "C'est maintenant! \U0001F973"; return; }
+    if(diff <= 0){ el.textContent = "C'est maintenant! 🥳"; return; }
     const d = Math.floor(diff/86400000); diff-=d*86400000;
     const h = Math.floor(diff/3600000); diff-=h*3600000;
     const m = Math.floor(diff/60000); diff-=m*60000;
     const s = Math.floor(diff/1000);
-    el.textContent = `\u23F3 ${d}j ${h}h ${m}m ${s}s avant notre soirÃ©e`;
+    el.textContent = `⏳ ${d}j ${h}h ${m}m ${s}s avant notre soirée`;
     requestAnimationFrame(()=>setTimeout(tick,1000));
   }
   tick();
@@ -403,7 +403,7 @@ function launchConfetti(){
   }
 }
 
-const symbols = ['\U0001F495','\U0001F338','\u2764\uFE0F','\U0001F339','\U0001F496'];
+const symbols = ['💕','🌸','❤️','🌹','💖'];
 let petalRainOn = false;
 function spawnPetal(xPos){
   const el = document.createElement('div');
