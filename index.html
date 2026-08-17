@@ -29,9 +29,9 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 .qanswer.revealed{filter:blur(0);opacity:1;}
 
 .pool-label{margin-top:16px;font-size:.85em;opacity:.85;}
-.game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;}
-.tile{background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.8);border-radius:12px;padding:10px 14px;font-size:1em;cursor:grab;min-width:80px;transition:.2s;user-select:none;color:#a3315a;font-weight:600;touch-action:none;}
-.tile.dragging{opacity:.4;transform:scale(1.1);cursor:grabbing;}
+.game-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0;position:relative;}
+.tile{background:rgba(255,255,255,.5);border:2px solid rgba(255,255,255,.8);border-radius:12px;padding:10px 14px;font-size:1em;cursor:grab;min-width:80px;transition:box-shadow .2s,border-color .2s;user-select:none;color:#a3315a;font-weight:600;touch-action:none;position:relative;}
+.tile.dragging{opacity:.85;box-shadow:0 8px 18px rgba(0,0,0,.25);z-index:50;position:fixed;pointer-events:none;transform:scale(1.12);}
 .tile.matched{background:#66bb6a;color:#fff;border-color:#66bb6a;cursor:default;opacity:.5;}
 .tile.wrong{animation:shake .3s;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
@@ -39,15 +39,16 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 
 .q-box{margin-top:30px;font-size:1.2em;}
 .btn-row{position:relative;height:120px;width:100%;margin-top:20px;}
-.oui-btn,.non-btn{position:absolute;padding:16px 34px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:15px;animation:breathe 1.6s ease-in-out infinite;}
+.oui-btn,.non-btn{position:absolute;padding:16px 34px;border-radius:30px;border:none;font-size:1.1em;font-weight:bold;cursor:pointer;top:15px;animation:breathe 1.6s ease-in-out infinite;transition:left .18s ease,top .18s ease,width .25s,height .25s,padding .25s,font-size .25s;}
 .oui-btn{left:calc(50% - 100px);background:#ff2d78;color:#fff;box-shadow:0 0 20px 6px rgba(255,45,120,.6);}
-.non-btn{left:calc(50% + 20px);background:#ff6b6b;color:#fff;box-shadow:0 0 20px 6px rgba(255,107,107,.5);transition:left .18s ease,top .18s ease;}
+.non-btn{left:calc(50% + 20px);background:#ff6b6b;color:#fff;box-shadow:0 0 20px 6px rgba(255,107,107,.5);}
 @keyframes breathe{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 .hint{font-size:.75em;opacity:.7;margin-top:8px;}
 
 .final{display:none;}
 .final.active{display:flex;flex-direction:column;align-items:center;}
 .final h2{font-size:1.8em;margin-bottom:10px;color:#a3315a;}
+.countdown{background:rgba(255,255,255,.6);border-radius:16px;padding:12px 20px;margin-bottom:14px;font-size:1.1em;font-weight:bold;color:#a3315a;box-shadow:0 4px 12px rgba(0,0,0,.1);}
 .detail-btn{background:rgba(255,255,255,.55);border:2px solid #ff5c8a;border-radius:50px;padding:14px 22px;margin:8px 0;width:100%;max-width:400px;text-align:center;font-size:1.3em;cursor:pointer;animation:blink 1.4s ease-in-out infinite;transition:.2s;}
 .detail-btn.opened{animation:none;background:#ffd1dc;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.55;}}
@@ -55,13 +56,17 @@ h1.hide{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .4s, heig
 .detail-text.show{max-height:200px;opacity:1;padding:12px 20px;margin-bottom:6px;}
 .detail-wrap{width:100%;display:flex;flex-direction:column;align-items:center;}
 .tap-hint{font-size:.8em;opacity:.75;margin-top:14px;}
+.music-toggle{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.6);border:none;border-radius:50%;width:44px;height:44px;font-size:1.3em;cursor:pointer;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
-.falling{position:fixed;top:-40px;font-size:1.6em;pointer-events:none;z-index:1;animation:fall linear forwards;}
+.falling{position:fixed;top:-40px;font-size:1.8em;z-index:5;animation:fall linear forwards;cursor:grab;touch-action:none;}
+.falling.confetti{border-radius:2px;}
+.falling.grabbed{animation:none !important;z-index:60;cursor:grabbing;transform:scale(1.3);}
 @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.9;}}
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas>
+<button class="music-toggle" id="musicBtn" title="Musique">🔈</button>
 <div class="heart-emoji">💌</div>
 <h1 id="mainTitle">Invitation surprise...</h1>
 <p class="sub" id="mainSub">Glisse le mot arabe vers la bonne question habibi (100% tu es capable)</p>
@@ -85,6 +90,7 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
 <div class="final" id="stage3">
   <div class="heart-emoji">🎉</div>
   <h2>À bientôt Habibi ❤️</h2>
+  <div class="countdown" id="countdown">Chargement du compte à rebours...</div>
   <div class="detail-wrap">
     <div class="detail-btn" data-key="tenue">👗</div>
     <div class="detail-text" data-for="tenue">Habille-toi avec ta belle robe noire, talon haut noir et ????</div>
@@ -95,10 +101,17 @@ canvas#fx{position:fixed;top:0;left:0;pointer-events:none;z-index:999;}
     <div class="detail-btn" data-key="msg">💬</div>
     <div class="detail-text" data-for="msg">J'ai hâte de passer cette soirée avec toi</div>
   </div>
-  <div class="tap-hint">👉 Touche l'écran n'importe où pour une dernière surprise 💕</div>
+  <div class="tap-hint">👉 Touche l'écran ou glisse les cœurs/fleurs avec ton doigt 💕</div>
 </div>
 
+<iframe id="ytFrame" style="display:none;width:1px;height:1px;" src="" allow="autoplay"></iframe>
+
 <script>
+// ==== CONFIGURATION A MODIFIER ====
+const EVENT_DATETIME = "2026-08-22T19:00:00";
+const YOUTUBE_ID = "kPa7bsKwL-c";
+// ===================================
+
 const pairs = [
   {fr:"Qui",      ar:"Meen",  answer:"Toi et moi habibi"},
   {fr:"Quoi",     ar:"Shu",   answer:"Un souper date au resto"},
@@ -112,7 +125,21 @@ const qList = document.getElementById('qList');
 const arRow = document.getElementById('arRow');
 const progressEl = document.getElementById('progress');
 let matchedCount = 0;
-let draggedTile = null;
+
+let audioCtx;
+function playPop(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime+0.12);
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.2);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+0.2);
+  }catch(e){}
+}
 
 pairs.forEach((p)=>{
   const row = document.createElement('div');
@@ -128,73 +155,95 @@ shuffledAr.forEach((p)=>{
   t.className = 'tile';
   t.textContent = p.ar;
   t.dataset.ar = p.ar;
-  t.draggable = true;
   arRow.appendChild(t);
 });
 
 function checkMatch(tile, row){
-  if(!tile || tile.classList.contains('matched') || row.classList.contains('done')) return;
+  if(!tile || tile.classList.contains('matched') || row.classList.contains('done')) return false;
   const pair = pairs.find(p=>p.fr===row.dataset.fr);
   if(pair.ar === tile.dataset.ar){
     tile.classList.add('matched');
-    tile.draggable = false;
     row.classList.remove('dragover');
     row.classList.add('done');
     row.querySelector('.qanswer').classList.add('revealed');
     row.querySelector('.qanswer').classList.remove('blur-answer');
     matchedCount++;
     progressEl.textContent = matchedCount + " / 6 trouvés";
+    playPop();
     if(matchedCount === pairs.length){
       setTimeout(goToStage2, 700);
     }
+    return true;
   } else {
     row.classList.add('dragover');
     row.style.animation='shake .3s';
     setTimeout(()=>{ row.classList.remove('dragover'); row.style.animation=''; },400);
+    return false;
   }
 }
 
 document.querySelectorAll('.tile').forEach(t=>{
-  t.addEventListener('dragstart', ()=>{ draggedTile = t; t.classList.add('dragging'); });
-  t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); draggedTile=null; });
-  t.addEventListener('touchstart', (e)=>{ draggedTile = t; t.classList.add('dragging'); }, {passive:true});
-  t.addEventListener('touchend', (e)=>{
-    t.classList.remove('dragging');
-    const touch = e.changedTouches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const row = el ? el.closest('.qrow') : null;
-    if(row) checkMatch(draggedTile, row);
-    draggedTile = null;
+  let offsetX=0, offsetY=0, origParent=null, origNext=null, origW=0, origH=0;
+  t.addEventListener('pointerdown', (e)=>{
+    if(t.classList.contains('matched')) return;
+    t.setPointerCapture(e.pointerId);
+    const rect = t.getBoundingClientRect();
+    origW = rect.width; origH = rect.height;
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    origParent = t.parentNode; origNext = t.nextSibling;
+    t.style.width = origW+'px'; t.style.height = origH+'px';
+    document.body.appendChild(t);
+    t.classList.add('dragging');
+    t.style.left = (e.clientX-offsetX)+'px';
+    t.style.top = (e.clientY-offsetY)+'px';
   });
-});
-document.querySelectorAll('.qrow').forEach(row=>{
-  row.addEventListener('dragover', (e)=>{ e.preventDefault(); row.classList.add('dragover'); });
-  row.addEventListener('dragleave', ()=> row.classList.remove('dragover'));
-  row.addEventListener('drop', (e)=>{ e.preventDefault(); row.classList.remove('dragover'); checkMatch(draggedTile, row); });
+  t.addEventListener('pointermove', (e)=>{
+    if(!t.classList.contains('dragging')) return;
+    t.style.left = (e.clientX-offsetX)+'px';
+    t.style.top = (e.clientY-offsetY)+'px';
+    document.querySelectorAll('.qrow').forEach(r=>r.classList.remove('dragover'));
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const row = under ? under.closest('.qrow') : null;
+    if(row && !row.classList.contains('done')) row.classList.add('dragover');
+  });
+  t.addEventListener('pointerup', (e)=>{
+    if(!t.classList.contains('dragging')) return;
+    t.classList.remove('dragging');
+    t.style.position=''; t.style.left=''; t.style.top=''; t.style.width=''; t.style.height='';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const row = under ? under.closest('.qrow') : null;
+    if(row) checkMatch(t, row);
+    if(origParent){
+      if(origNext) origParent.insertBefore(t, origNext);
+      else origParent.appendChild(t);
+    }
+  });
 });
 
 function goToStage2(){
   document.getElementById('mainTitle').classList.add('hide');
   document.getElementById('mainSub').classList.add('hide');
-  const s1 = document.getElementById('stage1');
-  s1.classList.remove('active','enter');
-  const s2 = document.getElementById('stage2');
-  s2.classList.add('active','enter');
+  document.getElementById('stage1').classList.remove('active','enter');
+  document.getElementById('stage2').classList.add('active','enter');
   positionNonInitial();
 }
-
 function positionNonInitial(){
-  const nonBtn = document.getElementById('nonBtn');
-  nonBtn.style.left = 'calc(50% + 20px)';
-  nonBtn.style.top = '15px';
+  const nb = document.getElementById('nonBtn');
+  nb.style.left = 'calc(50% + 20px)';
+  nb.style.top = '15px';
 }
 
 const nonBtn = document.getElementById('nonBtn');
 const ouiBtn = document.getElementById('ouiBtn');
+let nonAttempts = 0;
 function rectsOverlap(r1,r2){
   return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
 }
 function moveNon(){
+  nonAttempts++;
+  const shrink = Math.max(0.45, 1 - nonAttempts*0.07);
+  nonBtn.style.transform = `scale(${shrink})`;
   const btnRow = document.querySelector('#stage2 .btn-row');
   const rowRect = btnRow.getBoundingClientRect();
   const maxX = rowRect.width - nonBtn.offsetWidth;
@@ -217,11 +266,14 @@ nonBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); moveNon(); });
 
 ouiBtn.addEventListener('click', ()=>{
   launchFireworks();
+  launchConfetti();
+  startMusic();
   setTimeout(()=>{
     document.getElementById('stage2').classList.remove('active','enter');
     const s3 = document.getElementById('stage3');
     s3.classList.add('active','enter');
     startPetalRain();
+    startCountdown();
   }, 1200);
 });
 
@@ -237,6 +289,37 @@ document.querySelectorAll('.detail-btn').forEach(btn=>{
       btn.classList.add('opened');
     }
   });
+});
+
+function startCountdown(){
+  const target = new Date(EVENT_DATETIME).getTime();
+  const el = document.getElementById('countdown');
+  function tick(){
+    const now = Date.now();
+    let diff = target - now;
+    if(diff <= 0){ el.textContent = "C'est maintenant! 🥳"; return; }
+    const d = Math.floor(diff/86400000); diff-=d*86400000;
+    const h = Math.floor(diff/3600000); diff-=h*3600000;
+    const m = Math.floor(diff/60000); diff-=m*60000;
+    const s = Math.floor(diff/1000);
+    el.textContent = `⏳ ${d}j ${h}h ${m}m ${s}s avant notre soirée`;
+    requestAnimationFrame(()=>setTimeout(tick,1000));
+  }
+  tick();
+}
+
+let musicStarted = false;
+function startMusic(){
+  if(musicStarted) return;
+  musicStarted = true;
+  const frame = document.getElementById('ytFrame');
+  frame.src = `https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&loop=1&playlist=${YOUTUBE_ID}&controls=0`;
+  document.getElementById('musicBtn').textContent = '🔊';
+}
+document.getElementById('musicBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('musicBtn');
+  if(!musicStarted){ startMusic(); return; }
+  btn.textContent = btn.textContent === '🔊' ? '🔈' : '🔊';
 });
 
 const canvas = document.getElementById('fx');
@@ -272,32 +355,70 @@ function animate(){
 }
 animate();
 
+function launchConfetti(){
+  const colors = ['#ff8fab','#ffd1dc','#66bb6a','#ffb6c9','#ff5c8a','#ffe082'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const el = document.createElement('div');
+      el.className = 'falling confetti';
+      el.style.position='fixed';
+      el.style.top='-20px';
+      el.style.left = Math.random()*window.innerWidth+'px';
+      el.style.width = (6+Math.random()*6)+'px';
+      el.style.height = (10+Math.random()*8)+'px';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDuration = (2.5+Math.random()*2)+'s';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 5000);
+    }, i*20);
+  }
+}
+
 const symbols = ['💕','🌸','❤️','🌹','💖'];
+let petalRainOn = false;
 function spawnPetal(xPos){
   const el = document.createElement('div');
   el.className = 'falling';
   el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
   const x = xPos !== undefined ? xPos : Math.random()*window.innerWidth;
   el.style.left = x + 'px';
-  const duration = 3 + Math.random()*3;
+  const duration = 4 + Math.random()*3;
   el.style.animationDuration = duration + 's';
   document.body.appendChild(el);
-  setTimeout(()=> el.remove(), duration*1000 + 200);
+  const autoRemove = setTimeout(()=> el.remove(), duration*1000 + 200);
+
+  let offX=0, offY=0;
+  el.addEventListener('pointerdown', (e)=>{
+    clearTimeout(autoRemove);
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    offX = e.clientX - rect.left;
+    offY = e.clientY - rect.top;
+    el.classList.add('grabbed');
+    el.style.position='fixed';
+    el.style.left = rect.left+'px';
+    el.style.top = rect.top+'px';
+  });
+  el.addEventListener('pointermove', (e)=>{
+    if(!el.classList.contains('grabbed')) return;
+    el.style.left = (e.clientX-offX)+'px';
+    el.style.top = (e.clientY-offY)+'px';
+  });
+  el.addEventListener('pointerup', ()=>{
+    if(!el.classList.contains('grabbed')) return;
+    el.classList.remove('grabbed');
+    setTimeout(()=> el.remove(), 4000);
+  });
 }
 function startPetalRain(){
+  if(petalRainOn) return;
+  petalRainOn = true;
   setInterval(()=> spawnPetal(), 350);
 }
 document.getElementById('stage3').addEventListener('click', (e)=>{
-  if(e.target.closest('.detail-btn')) return;
+  if(e.target.closest('.detail-btn') || e.target.closest('.falling')) return;
   for(let i=0;i<8;i++){
     setTimeout(()=> spawnPetal(e.clientX + (Math.random()*60-30)), i*40);
-  }
-});
-document.getElementById('stage3').addEventListener('touchstart', (e)=>{
-  if(e.target.closest('.detail-btn')) return;
-  const x = e.touches[0].clientX;
-  for(let i=0;i<8;i++){
-    setTimeout(()=> spawnPetal(x + (Math.random()*60-30)), i*40);
   }
 });
 </script>
