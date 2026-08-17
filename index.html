@@ -275,7 +275,12 @@ nonBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); moveNon(); });
 ouiBtn.addEventListener('click', ()=>{
   const music = document.getElementById('bgMusic');
   music.volume = 0.5;
-  music.play().then(()=>{ document.getElementById('musicBtn').textContent = '🔊'; }).catch(()=>{});
+music.load();
+const playPromise = music.play();
+if(playPromise !== undefined){
+  playPromise.then(()=>{ document.getElementById('musicBtn').textContent = '🔊'; })
+  .catch((err)=>{ console.log('Autoplay bloqué:', err); document.getElementById('musicBtn').textContent = '🔈'; });
+}
   launchFireworks();
   launchConfetti();
   setTimeout(()=>{
